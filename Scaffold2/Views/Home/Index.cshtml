@@ -1,8 +1,43 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<section class="map">
+    <input id="lng" type="number" />
+    <input id="lat" type="number" />
+    <div id="map"></div>
+</section>
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+@section Scripts{
+    <script>
+        var map = L.map('map').setView([50.4020355, 30.5326905], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        fetch("/map/markers").then(r => r.json()).then(markers => {
+            markers.forEach(m => { L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title) })
+        })
+       
+
+        // let myMarker = null
+
+        // function onMapClick(e) {
+        //     let coords = e.latlng
+        //     console.log(`LAT: ${coords.lat} LONG: ${coords.lng}`)
+        //     if (myMarker !== null) { 
+        //         map.removeLayer(myMarker)
+        //     }
+        //     myMarker = L.marker([coords.lat, coords.lng]).addTo(map).bindPopup(`<a href="//map/marker/create">Create</a>`)
+
+        //     $("input#lat").val(coords.lat)
+        //     $("input#lng").val(coords.lng)
+        // }
+        // map.on('click', onMapClick);
+    </script>
+}

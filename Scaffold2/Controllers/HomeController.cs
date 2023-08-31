@@ -14,6 +14,18 @@ namespace Scaffold2.Controllers
             _logger = logger;
         }
         [Authorize]
+        [HttpGet("/map/markers")]
+        public IActionResult Markers()
+        {
+            return Ok(
+                new List<MapMarker>() 
+                    {
+                        new MapMarker { title = "Marker from DB # 1", lat = "50.45", lng = "30.52" },
+                        new MapMarker { title = "Marker from DB # 2", lat = "50.46", lng = "30.53" },
+                        new MapMarker { title = "Marker from DB # 3", lat = "50.47", lng = "30.54" },
+                }) ;
+        }
+        [Authorize]
         public IActionResult Index()
         {
             return View();

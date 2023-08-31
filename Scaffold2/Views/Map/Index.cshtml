@@ -1,0 +1,53 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Scaffold2.Models
+@model List<MapMarker>
+<div class="container">
+    <div class="col-12">
+        <h1>Map markers</h1>
+        <div id="map"></div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+        var map = L.map('map').setView([50.4020355, 30.5326905], .3);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        let markers = JSON.parse('@Json.Serialize(Model)');
+
+
+        markers.forEach(m => {
+            L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title);
+        });
+        fetch("/map")
+            .then(r => r.json())
+            .then(markersFromFetch => {
+                markersFromFetch.forEach(m => {
+                    L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title);
+                });
+            });
+        let myMarker = null
+        
+        function onMapClick(e) {
+            
+            let coords = e.latlng
+            console.log(`LAT: ${coords.lat} LONG: ${coords.lng}`)
+            
+            if (myMarker !== null) {
+                map.removeLayer(myMarker)
+            }
+            myMarker = L.marker([coords.lat, coords.lng]).addTo(map).bindPopup(`<a class="btn btn-outline-primary" href="/map/create/${coords.lat}/${coords.lng}">Create</a>`)
+           
+            $("input#lat").val(coords.lat)
+            $("input#lng").val(coords.lng)
+        }
+        map.on('click', onMapClick);
+    
+    </script>
+}

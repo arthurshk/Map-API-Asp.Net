@@ -1,0 +1,70 @@
+﻿@using Scaffold2.Models;﻿
+@model MapMarker
+
+@{
+    ViewData["Title"] = "Create Map Marker";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Create Markers</h2>
+<div class="container">
+    <form method="post" enctype="multipart/form-data" action="/map/create">
+        <input type="hidden" name="Id" value="@Model.Id">
+
+        <div class="form-group">
+            <label for="Title">Title</label>
+            <input type="text" id="title" name="title" value="@Model.title" class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.title)</span>
+        </div>
+
+        <div class="form-group">
+            <label for="lat">Latitude</label>
+            <input type="text" id="lat" name="lat" value="@Model.lat" class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.lat)</span>
+        </div>
+
+        <div class="form-group">
+            <label for="lng">Longitude</label>
+            <input type="text" id="lng" name="lng" value="@Model.lng" class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.lng)</span>
+        </div>
+        <div class="col-md-12">
+            <div id="map"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Marker</button>
+    </form>
+</div>
+@section Scripts{
+    <script>
+        let lat = @Html.Raw(Json.Serialize(Model.lat)); 
+        let lng = @Html.Raw(Json.Serialize(Model.lng));
+
+        let map = L.map('map').setView([lat, lng], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        L.marker([lat, lng]).addTo(map);
+        let markers = JSON.parse('@Json.Serialize(Model)')
+
+        fetch("/map").then(r => r.json()).then(markers => {
+            markers.forEach(m => { L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title) })
+        })
+        let myMarker = null
+        function onMapClick(e) {
+            let coords = e.latlng
+            console.log(`LAT: ${coords.lat} LONG: ${coords.lng}`)
+            if (myMarker !== null) {
+                map.removeLayer(myMarker)
+            }
+            myMarker = L.marker([coords.lat, coords.lng]).addTo(map);
+           
+            $("input#lat").val(coords.lat)
+            $("input#lng").val(coords.lng)
+        }
+        map.on('click', onMapClick);
+
+    </script>
+}
