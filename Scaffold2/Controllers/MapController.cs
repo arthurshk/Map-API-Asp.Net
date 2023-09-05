@@ -35,5 +35,33 @@ namespace Scaffold2.Controllers
             }
             return View("Create", marker);
         }
+        [HttpGet("/map/edit/{Id}")]
+        public IActionResult Edit(int Id)
+        {
+            var marker = db.News.FirstOrDefault(x => x.Id == Id);
+            return View(marker);
+        }
+        [HttpPost("/map/edit/{Id}")]
+        public IActionResult Edit(int Id,MapMarker marker)
+        {
+            var varmarker = db.News.FirstOrDefault(x => x.Id == Id);
+            varmarker.title = marker.title;
+            varmarker.lat = marker.lat;
+            varmarker.lng = marker.lng;
+            if (!ModelState.IsValid)
+            {
+                return View("Index", marker);
+            }
+            db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+        [HttpPost("/map/delete/{Id}")]
+        public IActionResult Delete(int id)
+        {
+            var varmarker = db.News.First(x => x.Id == id);
+            db.News.Remove(varmarker);
+            db.SaveChanges();
+            return Ok(new {Ok=true});
+        }
     }
 }

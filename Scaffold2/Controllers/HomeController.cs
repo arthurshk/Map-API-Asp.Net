@@ -7,23 +7,16 @@ namespace Scaffold2.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        public readonly MapDBContext db;
+        public HomeController(MapDBContext mapDBContext)
         {
-            _logger = logger;
+            db = mapDBContext;
         }
         [Authorize]
         [HttpGet("/map/markers")]
         public IActionResult Markers()
         {
-            return Ok(
-                new List<MapMarker>() 
-                    {
-                        new MapMarker { title = "Marker from DB # 1", lat = "50.45", lng = "30.52" },
-                        new MapMarker { title = "Marker from DB # 2", lat = "50.46", lng = "30.53" },
-                        new MapMarker { title = "Marker from DB # 3", lat = "50.47", lng = "30.54" },
-                }) ;
+            return Ok(db.News.ToList());
         }
         [Authorize]
         public IActionResult Index()

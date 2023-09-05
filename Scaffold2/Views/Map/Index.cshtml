@@ -14,7 +14,7 @@
 </div>
 @section Scripts{
     <script>
-        var map = L.map('map').setView([50.4020355, 30.5326905], .3);
+        var map = L.map('map').setView([50.4020355, 30.5326905], 3);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
@@ -23,13 +23,17 @@
 
 
         markers.forEach(m => {
-            L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title);
+            console.log(`Marker Id: ${m.id}`);
+            L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(`<div>${m.title}</div><a class="btn btn-outline-primary" href="/map/edit/${m.id}">Edit</a><button class="btn btn-outline-warning delete-marker" data-id="${m.id}">Delete</button>`);
         });
-        fetch("/map")
+
+            fetch("/map")
             .then(r => r.json())
             .then(markersFromFetch => {
                 markersFromFetch.forEach(m => {
-                    L.marker([Number(m.lat), Number(m.lng)]).addTo(map).bindPopup(m.title);
+                    L.marker([Number(m.lat), Number(m.lng)])
+                    .addTo(map)
+                        .bindPopup(`<div>${m.title}</div><a class="btn btn-outline-primary" href="/map/edit/${m.id}">Edit</a><button class="btn btn-outline-warning delete-marker" data-id="${m.id}">Delete</button>`);
                 });
             });
         let myMarker = null
@@ -48,6 +52,35 @@
             $("input#lng").val(coords.lng)
         }
         map.on('click', onMapClick);
-    
+
+        $(document).on("click", 'button.delete-marker', function (e) {
+            let id = $(e.target).data("id")
+            Swal.fire({
+                title: 'Are you sure you want to delete this marker with ID: ?' + id,
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/map/delete/${id}`, {
+                        method: "post"
+                    }).then(r=>r.json())
+                    .then(data =>{
+                            Swal.fire(
+                                'Deleted!',
+                                'Your file has been deleted.',
+                                'success'
+                        ).then(() => {
+                            window.location.reload()
+                        })
+                    })
+                    
+                }
+            })
+        })
+
     </script>
 }
