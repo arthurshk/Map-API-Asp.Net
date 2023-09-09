@@ -1,0 +1,104 @@
+﻿@using Scaffold2.Models;﻿
+@model CalendarModel
+
+@{
+    ViewData["Title"] = "Create Event";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <form id="createForm" method="post" enctype="multipart/form-data" asp-action="CreateEvent">
+        <input type="hidden" asp-for="@Model.Id">
+        <div class="form-group">
+            <label asp-for="@Model.eventTitle">Event Title:</label>
+            <input asp-for="@Model.eventTitle" required class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.eventTitle)</span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.eventDate">Event Date:</label>
+            <input asp-for="@Model.eventDate" type="date" required class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.eventDate)</span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.eventDescription">Event Description:</label>
+            <input asp-for="@Model.eventDescription" required class="form-control">
+            <span class="text-danger">@Html.ValidationMessageFor(m => m.eventDescription)</span>
+        </div>
+
+        <button type="submit" class="btn btn-outline-primary">Add Event</button>
+    </form>
+</div>
+
+@section Scripts{
+    <script>
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     let calendarEl = document.getElementById('calendar');
+        //     let calendar = new FullCalendar.Calendar(calendarEl, {
+        //         initialView: 'dayGridMonth',
+        //         events: [
+        //            { title: 'Event 1', start: '2023-09-10' },
+        //         ],
+        //     });
+        //     calendar.render();
+        // // });
+        // document.getElementById('createEventButton').addEventListener('click', function () {
+        //     window.location.href = '/calendar/create';
+        // });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let calendarEl = document.getElementById('calendar');
+            let calendar;
+            let events = [];
+
+            function initializeCalendar() {
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        
+                        const formattedEvents = events.map(event => ({
+                            id: event.id,
+                            title: event.eventTitle,
+                            start: event.eventDate,
+                            description: event.eventDescription
+                        }));
+                        successCallback(formattedEvents);
+                    },
+                });
+
+                console.log(events);
+                calendar.render();
+            }
+
+            initializeCalendar();
+
+            document.getElementById('createForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+
+                fetch('/calendar/create', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(newEventData => {
+                        console.log('Received JSON Data:', newEventData);
+                        const newEvent = {
+                            id: eventData.id,
+                            title: eventData.eventTitle,
+                            start: eventData.eventDate,
+                            description: eventData.eventDescription
+                        };
+                        console.log('Created New Event:', newEvent);
+                        events.push(newEvent);
+                        calendar.refetchEvents();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
+
+    </script>
+}
