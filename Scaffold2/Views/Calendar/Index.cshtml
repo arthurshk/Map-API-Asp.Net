@@ -14,7 +14,28 @@
         <div id="calendar"></div>
     </div>
 </div>
-
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Title:</strong> <span id="eventTitle"></span></p>
+                <p><strong>Date:</strong> <span id="eventDate"></span></p>
+                <p><strong>Description:</strong> <span id="eventDescription"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="editEventBtn">Edit</button>
+                <button type="button" class="btn btn-danger" id="deleteEventBtn">Delete</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts{
     <script>
@@ -49,14 +70,38 @@
                 calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     events: function (fetchInfo, successCallback, failureCallback) {
-
-                        // const formattedEvents = events.map(event => ({
-                        //     id: event.id,
-                        //     title: event.eventTitle,
-                        //     start: event.eventDate,
-                        //     description: event.eventDescription
-                        // }));
                         successCallback(events);
+                    },
+                    eventClick: function (info) {
+                        const event = info.event;
+                        document.getElementById('eventTitle').textContent = event.title;
+                        document.getElementById('eventDate').textContent = event.start.toLocaleDateString();
+                        document.getElementById('eventDescription').textContent = event.extendedProps.description;
+
+                        const editEventBtn = document.getElementById('editEventBtn');
+                        editEventBtn.addEventListener('click', function () {
+                            console.log('Event ID:', event.id);
+                            window.location.href = `/calendar/edit/${event.id}`;
+                        });
+                        const deleteEventBtn = document.getElementById('deleteEventBtn');
+                        deleteEventBtn.addEventListener('click', function () {
+                            fetch(`/calendar/delete/${event.id}`, {
+                                method: 'DELETE'
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        $('#eventDetailsModal').modal('hide');
+                                        window.location.reload();
+                                    } else {
+                                        console.error('Failed to delete event:', response.statusText);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+                        });
+
+                        $('#eventDetailsModal').modal('show');
                     },
                 });
 
@@ -66,61 +111,62 @@
 
             initializeCalendar();
 
-            // let eventsData = @Html.Raw(Json.Serialize(Model));
-            // eventsData.forEach(eventData => {
-            //     const newEvent = {
-            //         id: eventData.id,
-            //         title: eventData.eventTitle,
-            //         start: eventData.eventDate,
-            //         description: eventData.eventDescription
-            //     };
-            //     events.push(newEvent);
-            // });
-
             calendar.refetchEvents();
         });
+        // deleteEventBtn.addEventListener('click', function () {
+        //     const event = info.event;
 
-        // document.addEventListener('DOMContentLoaded', function () {
-        //     let calendarEl = document.getElementById('calendar');
-        //     let calendar;
-        //     let events = [];
-
-        //     function initializeCalendar() {
-        //         calendar = new FullCalendar.Calendar(calendarEl, {
-        //             initialView: 'dayGridMonth',
-        //             events: events,
-        //         });
-        //         console.log(events)
-        //         calendar.render();
-        //     }
-
-        //     initializeCalendar();
-
-        //     document.getElementById('createForm').addEventListener('submit', function (e) {
-        //         e.preventDefault();
-        //         let formData = new FormData(this);
-
-        //         fetch('/calendar/create', {
-        //             method: 'POST',
-        //             body: formData
-        //         })
-        //             .then(response => response.json())
-        //             .then(newEventData => {
-        //                 console.log('Received JSON Data:', newEventData);
-        //                 const newEvent = {
-        //                     id: newEventData.id,
-        //                     title: newEventData.title,
-        //                     start: newEventData.start,
-        //                     description: newEventData.description
-        //                 };
-        //                console.log('Created New Event:', newEvent); 
-        //                 events.push(newEvent);
+        //     fetch(`/calendar/delete/${event.id}`, {
+        //         method: 'DELETE'
+        //     })
+        //         .then(response => {
+        //             if (response.ok) {
+        //                 $('#eventDetailsModal').modal('hide');
         //                 calendar.refetchEvents();
-        //             })
-        //             .catch(error => {
-        //                 console.error('Error:', error);
-        //             });
-        //     });
+        //             } else {
+        //                 console.error('Failed to delete event:', response.statusText);
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //         });
+        // });
+
+        // editEventBtn.addEventListener('click', function () {
+        //     const event = info.event;
+
+        //     // Assuming you have input fields for editing event details
+        //     const updatedTitle = /* Get updated title */;
+        //     const updatedDate = /* Get updated date */;
+        //     const updatedDescription = /* Get updated description */;
+
+        //     // Create an object with the updated data
+        //     const updatedEventData = {
+        //         eventTitle: updatedTitle,
+        //         eventDate: updatedDate,
+        //         eventDescription: updatedDescription
+        //     };
+
+        //     // Make an AJAX request to update the event
+        //     fetch(`/calendar/edit/${event.id}`, {
+        //         method: 'PUT',
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify(updatedEventData)
+        //     })
+        //         .then(response => {
+        //             if (response.ok) {
+        //                 $('#eventDetailsModal').modal('hide');
+        //                 calendar.refetchEvents();
+        //             } else {
+        //                 // Handle error scenarios (e.g., display an error message)
+        //                 console.error('Failed to update event:', response.statusText);
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //         });
         // });
 
     </script>
